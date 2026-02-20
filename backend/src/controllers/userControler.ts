@@ -5,11 +5,15 @@ const prisma = new PrismaClient();
 
 class UsersController {
     async register(req: Request, res: Response) {
-        const { username, password } = req.body;
+        const { username, email, password } = req.body;
+        if (!username || !email || !password) {
+            return res.status(400).json({ error: "username, email and password are required" });
+        }
         try {
             const user = await prisma.user.create({
                 data: {
                     username,
+                    email,
                     password, // In a real application, make sure to hash the password
                 },
             });
@@ -22,7 +26,7 @@ class UsersController {
     async authenticate(req: Request, res: Response) {
         const { username, password } = req.body;
         try {
-            const user = await prisma.user.findUnique({
+            const user = await prisma.user.findFirst({
                 where: { username },
             });
             if (user && user.password === password) { // In a real application, compare hashed passwords
