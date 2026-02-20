@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -54,7 +54,7 @@ class AlertsController {
   async update(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
-      const { title, description, severity, local } = req.body;
+      const { title, description, severity, local, isResolved } = req.body;
 
       const alert = await prisma.alert.update({
         where: { id: Number(id) },
@@ -63,6 +63,7 @@ class AlertsController {
           description,
           severity,
           local,
+          isResolved,
         },
       });
 
