@@ -1,5 +1,3 @@
-"use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,12 +21,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { formSchema } from "@/lib/zod";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-// import { toast } from "sonner";
 import { LoaderCircle, Eye, EyeOff } from "lucide-react";
-import Link from "next/link";
-// import GoogleButton from "./google/GoogleButton";
+import { useNavigate, Link } from "react-router-dom";
 
 const loginSchema = formSchema.pick({
   email: true,
@@ -46,7 +41,7 @@ export function Login() {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     await authClient.signIn.email(
@@ -60,15 +55,13 @@ export function Login() {
         },
         onSuccess: () => {
           setLoading(false);
-          // toast.success(`Bem-vindo de volta!`);
           setTimeout(() => {
-            router.push("/dashboard");
+            navigate("/dashboard");
           }, 1500);
         },
         onError: (ctx: any) => {
           setLoading(false);
           console.log(ctx.error);
-          // toast.error("Erro ao acessar conta.");
         },
       }
     );
@@ -82,6 +75,7 @@ export function Login() {
           Insira seu e-mail e senha abaixo para acessar a conta.
         </CardDescription>
       </CardHeader>
+
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -98,6 +92,7 @@ export function Login() {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="senha"
@@ -107,7 +102,6 @@ export function Login() {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        placeholder=""
                         type={showPassword ? "text" : "password"}
                         {...field}
                       />
@@ -129,6 +123,7 @@ export function Login() {
                 </FormItem>
               )}
             />
+
             <Button
               type="submit"
               className="w-full cursor-pointer"
@@ -140,24 +135,28 @@ export function Login() {
                 "Acessar"
               )}
             </Button>
+
             <div className="text-center text-sm">
               Ainda não tem uma conta?{" "}
-              <Link href="/register" className="underline underline-offset-4">
+              <Link
+                to="/register"
+                className="underline underline-offset-4"
+              >
                 Criar conta
               </Link>
             </div>
           </form>
         </Form>
       </CardContent>
+
       <CardFooter className="flex flex-col items-center gap-4">
         <div className="flex items-center w-full gap-2">
-          <hr className="flex-grow h-px bg-gray-200 dark:bg-gray-700 border-0"/>
+          <hr className="flex-grow h-px bg-gray-200 dark:bg-gray-700 border-0" />
           <span className="text-gray-900 dark:text-gray-100 text-sm">
             OU
           </span>
-          <hr className="flex-grow h-px bg-gray-200 dark:bg-gray-700 border-0"/>
+          <hr className="flex-grow h-px bg-gray-200 dark:bg-gray-700 border-0" />
         </div>
-        {/* <GoogleButton /> */}
       </CardFooter>
     </Card>
   );

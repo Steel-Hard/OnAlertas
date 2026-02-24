@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { UrbanAlert } from "@/types/alert";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3000";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080";
 
 export function useAlerts() {
   const [alerts, setAlerts] = useState<UrbanAlert[]>([]);

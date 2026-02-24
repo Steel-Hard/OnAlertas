@@ -1,5 +1,3 @@
-"use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -25,8 +23,9 @@ import { authClient } from "@/lib/auth-client";
 import { formSchema } from "@/lib/zod";
 import { useState } from "react";
 import { LoaderCircle, Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+
+// 1. Importações do React Router no lugar do Next.js
+import { useNavigate, Link } from "react-router-dom";
 
 export function Register() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -40,7 +39,9 @@ export function Register() {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
+  
+  // 2. Instanciando o hook de navegação do React Router
+  const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     await authClient.signUp.email(
@@ -57,7 +58,8 @@ export function Register() {
           setLoading(false);
         //   toast.success(`Conta ${values.nome} criada com sucesso`);
           setTimeout(() => {
-            router.push("/login");
+            // 3. Usando o navigate no lugar do router.push
+            navigate("/login");
           }, 1500);
           console.log(values);
         },
@@ -150,7 +152,8 @@ export function Register() {
             </Button>
             <div className="text-center text-sm">
               Já tem uma conta?{" "}
-              <Link href="/login" className="underline underline-offset-4">
+              {/* 4. Link do react-router-dom usa a propriedade 'to' */}
+              <Link to="/login" className="underline underline-offset-4">
                 Acessar conta
               </Link>
             </div>
