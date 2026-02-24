@@ -43,28 +43,31 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  async function onSubmit(values: z.infer<typeof loginSchema>) {
-    await authClient.signIn.email(
-      {
-        email: values.email,
-        password: values.senha,
-      },
-      {
-        onRequest: () => {
-          setLoading(true);
-        },
-        onSuccess: () => {
-          setLoading(false);
-          setTimeout(() => {
-            navigate("/dashboard");
-          }, 1500);
-        },
-        onError: (ctx: any) => {
-          setLoading(false);
-          console.log(ctx.error);
-        },
+  // Envia dados de registro para o backend
+  async function onSubmit(values: { nome: string; email: string; senha: string }) {
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:3000/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email, password: values.senha }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      setLoading(false);
+
+      if (!res.ok) {
+        console.log("Error:", data);
+        return { ok: false, data };
       }
-    );
+      navigate("/dashboard");
+
+      return { ok: true, data };
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      return { ok: false, error };
+    }
   }
 
   return (

@@ -44,31 +44,30 @@ export function Register() {
   const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await authClient.signUp.email(
-      {
-        name: values.nome,
-        email: values.email,
-        password: values.senha,
-      },
-      {
-        onRequest: () => {
-          setLoading(true);
-        },
-        onSuccess: () => {
-          setLoading(false);
-        //   toast.success(`Conta ${values.nome} criada com sucesso`);
-          setTimeout(() => {
-            // 3. Usando o navigate no lugar do router.push
-            navigate("/login");
-          }, 1500);
-          console.log(values);
-        },
-        onError: () => {
-          setLoading(false);
-          console.log('erro');
-        },
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:3000/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email, password: values.senha }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      setLoading(false);
+
+      if (!res.ok) {
+        console.log("Login error:", data);
+        return { ok: false, data };
       }
-    );
+
+      console.log("Login success:", data);
+      navigate("/dashboard");
+      return { ok: true, data };
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      return { ok: false, error };
+    }
   }
 
   return (
