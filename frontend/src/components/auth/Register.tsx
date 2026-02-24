@@ -21,11 +21,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { formSchema } from "@/lib/zod";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 
 // 1. Importações do React Router no lugar do Next.js
 import { useNavigate, Link } from "react-router-dom";
+import { username } from "better-auth/plugins";
+import { AuthContext } from "@/context/AuthContext";
+
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3000";
 
 export function Register() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -40,35 +44,36 @@ export function Register() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
+  const {isAuth , setLogin} = useContext(AuthContext);
   // 2. Instanciando o hook de navegação do React Router
   const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    await authClient.signUp.email(
-      {
-        name: values.nome,
-        email: values.email,
-        password: values.senha,
-      },
-      {
-        onRequest: () => {
-          setLoading(true);
-        },
-        onSuccess: () => {
-          setLoading(false);
-        //   toast.success(`Conta ${values.nome} criada com sucesso`);
-          setTimeout(() => {
-            // 3. Usando o navigate no lugar do router.push
-            navigate("/login");
-          }, 1500);
-          console.log(values);
-        },
-        onError: () => {
-          setLoading(false);
-          console.log('erro');
-        },
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/users/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email, password: values.senha , username: values.nome}),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      setLoading(false);
+
+      if (!res.ok) {
+        console.log("Login error:", data);
+        return { ok: false, data };
       }
-    );
+      
+      setLogin(true);
+      console.log("Login success:", data);
+       navigate("/")
+      return { ok: true, data };
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      return { ok: false, error };
+    }
   }
 
   return (

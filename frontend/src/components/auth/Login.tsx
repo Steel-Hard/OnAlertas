@@ -21,9 +21,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { formSchema } from "@/lib/zod";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
+import { AuthContext } from "@/context/AuthContext";
+
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3000";
 
 const loginSchema = formSchema.pick({
   email: true,
@@ -31,6 +34,8 @@ const loginSchema = formSchema.pick({
 });
 
 export function Login() {
+  const {isAuth , setLogin} = useContext(AuthContext);
+
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -43,28 +48,34 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  async function onSubmit(values: z.infer<typeof loginSchema>) {
-    await authClient.signIn.email(
-      {
-        email: values.email,
-        password: values.senha,
-      },
-      {
-        onRequest: () => {
-          setLoading(true);
-        },
-        onSuccess: () => {
-          setLoading(false);
-          setTimeout(() => {
-            navigate("/dashboard");
-          }, 1500);
-        },
-        onError: (ctx: any) => {
-          setLoading(false);
-          console.log(ctx.error);
-        },
+  async function onSubmit(values: { nome: string; email: string; senha: string }) {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email, password: values.senha }),
+      });
+      
+      const data = await res.json().catch(() => ({}));
+      setLoading(false);
+      
+      if (!res.ok) {
+        console.log("Error:", data);
+        return { ok: false, data };
       }
-    );
+      
+      
+      setLogin(true);
+      console.log(isAuth)
+      
+       navigate("/")
+      return { ok: true, data };
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+      return { ok: false, error };
+    }
   }
 
   return (
@@ -149,15 +160,7 @@ export function Login() {
         </Form>
       </CardContent>
 
-      <CardFooter className="flex flex-col items-center gap-4">
-        <div className="flex items-center w-full gap-2">
-          <hr className="flex-grow h-px bg-gray-200 dark:bg-gray-700 border-0" />
-          <span className="text-gray-900 dark:text-gray-100 text-sm">
-            OU
-          </span>
-          <hr className="flex-grow h-px bg-gray-200 dark:bg-gray-700 border-0" />
-        </div>
-      </CardFooter>
+    
     </Card>
   );
 }

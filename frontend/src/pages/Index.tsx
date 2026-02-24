@@ -6,7 +6,7 @@ import Dashboard from "@/components/Dashboard";
 import { AlertTriangle } from "lucide-react";
 
 const Index = () => {
-  const { alerts, addAlert, toggleStatus } = useAlerts();
+  const { alerts, addAlert, toggleStatus,handleDelete } = useAlerts();
 
   return (
     <div className="min-h-screen bg-background">
@@ -16,8 +16,12 @@ const Index = () => {
             <AlertTriangle className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold leading-tight text-foreground">Alertas Urbanos</h1>
-            <p className="text-xs text-muted-foreground">Gerenciamento de alertas em tempo real</p>
+            <h1 className="text-xl font-bold leading-tight text-foreground">
+              On Alertas
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Gerenciamento de alertas em tempo real
+            </p>
           </div>
         </div>
       </header>
@@ -31,7 +35,11 @@ const Index = () => {
 
           <TabsContent value="alerts" className="space-y-6">
             <AlertForm onSubmit={addAlert} />
-            <AlertList alerts={alerts} onToggleStatus={toggleStatus} />
+            <AlertList
+              alerts={alerts}
+              onToggleStatus={toggleStatus}
+              onDelete={handleDelete}
+            />
           </TabsContent>
 
           <TabsContent value="dashboard">

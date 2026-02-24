@@ -1,13 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useCallback } from "react";
 import { UrbanAlert } from "@/types/alert";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8080";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3000";
 
 export function useAlerts() {
   const [alerts, setAlerts] = useState<UrbanAlert[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+ 
+  const handleDelete = (id: string) => {
+  setAlerts(prev => prev.filter(a => a.id !== id));
+}; 
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -98,5 +102,5 @@ export function useAlerts() {
     }
   }, []);
 
-  return { alerts, loading, error, addAlert, toggleStatus, refresh };
+  return { alerts, loading, error, addAlert, toggleStatus, refresh , handleDelete};
 }

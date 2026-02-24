@@ -8,25 +8,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, AlertTriangle, MapPin, Clock } from "lucide-react";
+import {
+  CheckCircle2,
+  AlertTriangle,
+  MapPin,
+  Clock,
+  Trash,
+} from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface Props {
   alerts: UrbanAlert[];
   onToggleStatus: (id: string) => void;
+  onDelete: (id: string) => void; // 👈 novo callback
 }
 
-export default function AlertList({ alerts, onToggleStatus }: Props) {
-  const [filterType, setFilterType] = useState<string>("all");
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3000";
 
-  const filtered = filterType === "all" ? alerts : alerts.filter((a) => a.type === filterType);
+export default function AlertList({
+  alerts,
+  onToggleStatus,
+  onDelete,
+}: Props) {
+  const [filterType, setFilterType] = useState<string>("all");
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  const deleteAlert = async (alertId: string) => {
+    try {
+      setLoadingId(alertId);
+
+      const res = await fetch(`${API_BASE}/api/alerts/${alertId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error("Erro ao deletar alerta");
+      }
+
+      onDelete(alertId); // 👈 atualiza estado no pai
+      toast.success("Alerta removido com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao remover alerta.");
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const filtered =
+    filterType === "all"
+      ? alerts
+      : alerts.filter((a) => a.type === filterType);
 
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold">Alertas ({filtered.length})</h2>
+        <h2 className="text-lg font-semibold">
+          Alertas ({filtered.length})
+        </h2>
+
         <Select value={filterType} onValueChange={setFilterType}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Filtrar por tipo" />
@@ -34,7 +77,9 @@ export default function AlertList({ alerts, onToggleStatus }: Props) {
           <SelectContent>
             <SelectItem value="all">Todos os tipos</SelectItem>
             {ALERT_TYPES.map((t) => (
-              <SelectItem key={t} value={t}>{t}</SelectItem>
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -49,44 +94,72 @@ export default function AlertList({ alerts, onToggleStatus }: Props) {
           {filtered.map((alert) => (
             <div
               key={alert.id}
-              className="animate-fade-in rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
+              className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold text-card-foreground">{alert.title}</h3>
+                    <h3 className="font-semibold text-card-foreground">
+                      {alert.title}
+                    </h3>
                     <TypeBadge type={alert.type} />
                     <StatusBadge status={alert.status} />
                   </div>
+
                   {alert.description && (
-                    <p className="text-sm text-muted-foreground">{alert.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {alert.description}
+                    </p>
                   )}
+
                   <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" /> {alert.location}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {format(new Date(alert.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                      {format(
+                        new Date(alert.createdAt),
+                        "dd/MM/yyyy HH:mm",
+                        { locale: ptBR }
+                      )}
                     </span>
                   </div>
                 </div>
-                <Button
-                  variant={alert.status === "ativo" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => onToggleStatus(alert.id)}
-                  className="shrink-0"
-                >
-                  {alert.status === "ativo" ? (
-                    <>
-                      <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Resolver
-                    </>
-                  ) : (
-                    <>
-                      <AlertTriangle className="mr-1 h-3.5 w-3.5" /> Reativar
-                    </>
-                  )}
-                </Button>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={loadingId === alert.id}
+                    onClick={() => deleteAlert(alert.id)}
+                  >
+                    <Trash className="mr-1 h-4 w-4" />
+                    Remover
+                  </Button>
+
+                  <Button
+                    variant={
+                      alert.status === "ativo"
+                        ? "default"
+                        : "outline"
+                    }
+                    size="sm"
+                    onClick={() => onToggleStatus(alert.id)}
+                  >
+                    {alert.status === "ativo" ? (
+                      <>
+                        <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                        Resolver
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="mr-1 h-3.5 w-3.5" />
+                        Reativar
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
@@ -97,15 +170,24 @@ export default function AlertList({ alerts, onToggleStatus }: Props) {
 }
 
 function TypeBadge({ type }: { type: AlertType }) {
-  return <Badge variant="secondary" className="text-xs">{type}</Badge>;
+  return (
+    <Badge variant="secondary" className="text-xs">
+      {type}
+    </Badge>
+  );
 }
 
 function StatusBadge({ status }: { status: string }) {
   const isActive = status === "ativo";
+
   return (
     <Badge
       variant="outline"
-      className={isActive ? "border-warning text-warning" : "border-success text-success"}
+      className={
+        isActive
+          ? "border-warning text-warning"
+          : "border-success text-success"
+      }
     >
       {isActive ? "Ativo" : "Resolvido"}
     </Badge>
