@@ -24,10 +24,10 @@ class UsersController {
     }
 
     async authenticate(req: Request, res: Response) {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
         try {
-            const user = await prisma.user.findFirst({
-                where: { username },
+            const user = await prisma.user.findUnique({
+                where: { email },
             });
             if (user && user.password === password) { // In a real application, compare hashed passwords
                 res.status(200).json({ message: "Authentication successful" });

@@ -3,9 +3,10 @@ import AlertsController from "../controllers/alertController";
 
 const router = Router();
 
-router.post("/alerts", AlertsController.create);
-router.get("/alerts", AlertsController.getAll);
-router.put("/alerts/:id", AlertsController.getById);
-router.delete("/alerts/:id", AlertsController.delete);
+router.post("/", AlertsController.create);
+router.get("/", AlertsController.getAll);
+router.get("/:id", AlertsController.getById);
+router.put("/:id", AlertsController.update);
+router.delete("/:id", AlertsController.delete);
 
 export default router;
