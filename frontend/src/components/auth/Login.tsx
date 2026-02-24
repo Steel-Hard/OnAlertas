@@ -25,6 +25,8 @@ import { useState } from "react";
 import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3000";
+
 const loginSchema = formSchema.pick({
   email: true,
   senha: true,
@@ -43,11 +45,10 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  // Envia dados de registro para o backend
   async function onSubmit(values: { nome: string; email: string; senha: string }) {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:3000/api/users/login", {
+      const res = await fetch(`${API_BASE}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: values.email, password: values.senha }),

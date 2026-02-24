@@ -1,15 +1,16 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 class UsersController {
     async register(req: Request, res: Response) {
-        const { username, password } = req.body;
+        const { username, email, password } = req.body;
         try {
             const user = await prisma.user.create({
                 data: {
                     username,
+                    email,
                     password, // In a real application, make sure to hash the password
                 },
             });
@@ -20,10 +21,10 @@ class UsersController {
     }
 
     async authenticate(req: Request, res: Response) {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
         try {
             const user = await prisma.user.findUnique({
-                where: { username },
+                where: { email },
             });
             if (user && user.password === password) { // In a real application, compare hashed passwords
                 res.status(200).json({ message: "Authentication successful" });

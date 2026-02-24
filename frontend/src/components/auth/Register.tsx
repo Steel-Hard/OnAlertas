@@ -27,6 +27,8 @@ import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 // 1. Importações do React Router no lugar do Next.js
 import { useNavigate, Link } from "react-router-dom";
 
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:3000";
+
 export function Register() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,7 +48,7 @@ export function Register() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:3000/api/users/login", {
+      const res = await fetch(`${API_BASE}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: values.email, password: values.senha }),

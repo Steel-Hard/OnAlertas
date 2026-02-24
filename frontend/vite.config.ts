@@ -7,7 +7,8 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080,
+    // Porta do frontend em desenvolvimento (diferente da do Postgres)
+    port: 4173,
     hmr: {
       overlay: false,
     },
